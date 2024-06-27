@@ -12,6 +12,27 @@ function ProductDetail({ addToCart, removeFromCart, getQuantityOfItemInCart }) {
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState(null);
 
+    // Function to fetch product details
+    const fetchProduct = async () => {
+      setIsFetching(true);
+      try {
+        const response = await axios.get(`http://localhost:3000/products/${productId}`);
+        setProduct(response.data);
+        setIsFetching(false);
+      } catch (error) {
+        setError(error);
+        setIsFetching(false);
+      }
+    };
+  
+    // useEffect hook to fetch product details on component mount
+    useEffect(() => {
+      fetchProduct();
+    }, []); // Empty dependency array ensures this effect runs only once on mount
+  
+
+
+
 
   if (error) {
     return <NotFound />;
