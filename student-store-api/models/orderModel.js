@@ -12,15 +12,7 @@ const getAllOrders = async() => {
 
 //get an order with its respective orderitems
 const getOrderById = async (order_id) => {
-    //new code
-//   const price = await getTotal(order_id);
-//   console.log(price);
-//   const t = await prisma.orders.update({
-//     where: { order_id: parseInt(order_id) },
-//     data: {
-//       total_price: price,
-//     }
-//   });
+
     return prisma.orders.findUnique({
         where: {
             order_id: parseInt(order_id)
@@ -31,14 +23,23 @@ const getOrderById = async (order_id) => {
     });
 };
 
-//creates a new order
-const createOrder = async(orderData) =>{
-    //console.log(orderData);
+
+// Function to create a new order
+const createOrder = async (orderData) => {
+    const { customer_id, status, total_price } = orderData;
     return prisma.orders.create({
-        data: orderData
-        
+        data: {
+            customer_id: parseInt(customer_id),
+            status,
+            total_price: parseFloat(total_price)
+        },
+        include: {
+            orderItems: true  // Ensure orderItems are included when creating
+        }
     });
 };
+
+
 
 //updates a new order
 const updateOrder = async(order_id, orderData) => {
@@ -48,12 +49,6 @@ const updateOrder = async(order_id, orderData) => {
     });
 };
 
-//deletes a order
-// const deleteOrder = async(order_id) => {
-//     return prisma.orders.delete({
-//         where: { order_id: parseInt(order_id)}
-//     })
-// }
 
 //this code deletes an order, 
 const deleteOrder = async (order_id) => {
@@ -78,42 +73,29 @@ const deleteOrder = async (order_id) => {
     }
 };
 
-//const addItemstoOrder
-//old version
-// const addItemsToOrder = async(order_id, orderItemsData) =>{
-//     const createOrderItems = orderItemsData.map(item => {
-//         return prisma.orderItems.create({
-//             data:{
-//                 order_id: parseInt(order_id),
-//                 product_id: item.product_id,
-//                 quantity: item.quantity,
-//                 price: item.price,
-//             }
-//         });
-//     });
-//     return Promise.all(createOrderItems)
-// };
 
 const addItemsToOrder = async (order_id, orderItemsData) => {
-    console.log(orderItemsData)
     const createdOrderItems = [];
 
     for (const item of orderItemsData) {
         const createdItem = await prisma.orderItems.create({
             data: {
                 order_id: parseInt(order_id),
-                product_id: item.product_id,
-                quantity: item.quantity,
-                price: item.price,
+                product_id: parseInt(item.product_id),
+                quantity: parseInt(item.quantity),
+                price: parseFloat(item.price),
             }
         });
         createdOrderItems.push(createdItem);
     }
-    //recalculating and updating total_price
+
+    // Update total price after creating all order items
     await updateOrderTotalPrice(order_id);
 
     return createdOrderItems;
 };
+
+
 
 const updateOrderTotalPrice = async (order_id) => {
     const order = await prisma.orders.findUnique({
@@ -169,6 +151,6 @@ module.exports ={
     deleteOrder,
     addItemsToOrder,
     calculateOrderTotal,
+    updateOrderTotalPrice,
     
 };
-

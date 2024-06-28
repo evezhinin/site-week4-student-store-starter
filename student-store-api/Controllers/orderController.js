@@ -67,10 +67,9 @@ const deleteOrder = async (req, res) => {
 const addItemsToOrder = async (req, res) => {
     try {
         const order_id = req.params.order_id;
-        //get the data from request body 
+
         const orderItemsData = req.body.items;//maybe change orderItems to items
-        //console.log(orderItemsData, req.body)
-        //call the orderModel to add items to the order
+      
         const newOrderItems = await orderModel.addItemsToOrder(order_id, orderItemsData);
 
         res.status(200).json(newOrderItems);
